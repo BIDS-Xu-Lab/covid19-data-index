@@ -14,9 +14,6 @@ state: () => ({
     // for the router
     router: router,
 
-    // keyword
-    keyword: '',
-
     // popular datasets
     popular_dataset_ids: [
         816,
@@ -78,7 +75,36 @@ state: () => ({
 
     datasets: [],
     datasets_dict: {},
+
+    // search related
+    keyword: '',
     search_engine: null,
+    search_config: {
+        searchableFields: [
+            'title', 
+            'description', 
+            'organization', 
+        ],
+        aggregations: {
+            data_type: {
+                title: 'Data Type',
+                size: 10
+            },
+            country: {
+                title: 'Country',
+                size: 10
+            },
+        }
+    },
+    filters: {
+        data_type: [],
+        country: [],
+    },
+    selected_filters: [],
+    page: 1,
+    per_page: 10,
+    sort_by: 'best_match',
+    search_results: {},
 }),
 
 getters: {
@@ -86,18 +112,41 @@ getters: {
 
 actions: {
     gotoPage(page) {
+        if (this.current_page === page) {
+            return;
+        }
+
         this.current_page = page;
         this.router.push("/" + page);
+    },
+
+    gotoDatasetPage(id) {
+        this.router.push("/detail/" + id);
     },
 
     init: async function() {
         await this.loadData();
         this.buildDict();
-        this.buildIndex();
+        await this.buildIndex();
     },
 
     loadData: async function() {
         // send a fetch request to the /data-covid19-data.index.jsonl
+        // something like this:
+        // { 
+        //     "id": 2, 
+        //     "title": "COVID19 Cases Switzerland", 
+        //     "description": "COVID19 Cases Switzerland ", 
+        //     "data_type": "Epidemiology", 
+        //     "authors": "DanielProbst",
+        //     "organization": "Unknown", 
+        //     "country": "Unknown", 
+        //     "source_url": "https:\/\/www.kaggle.com\/daenuprobst\/covid19-cases-switzerland", 
+        //     "data_urls": ["https:\/\/www.kaggle.com\/daenuprobst\/covid19-cases-switzerland\/download"], 
+        //     "date_created": "2020-04-28", 
+        //     "date_updated": "2020-07-03" 
+        // }
+
         const response = await fetch(
             '/data-covid19-data-index.jsonl'
         );
@@ -128,11 +177,60 @@ actions: {
     },
 
     buildIndex: function() {
-        this.search_engine = itemsjs(this.datasets, {
-            searchableFields: ['title', 'description', 'organization', 'data_type'],
+
+        return new Promise((resolve, reject) => {
+
+            this.search_engine = itemsjs(
+                this.datasets, 
+                this.search_config
+            );
+            console.log('* built index');
+
+            resolve();
         });
 
-        console.log('* built index');
+    },
+    
+    search: function() {
+        if (!this.keyword.trim()) {
+            return [];
+        }
+
+        let results = this.search_engine.search({
+            query: this.keyword.trim(),
+            filters: this.filters,
+            per_page: this.per_page,
+            page: this.page,
+            sort: this.sort_by,
+        });
+
+        this.selected_filters = [];
+        for (const [key, value] of Object.entries(this.filters)) {
+            for (const name in value) {
+                this.selected_filters.push({
+                    name: value[name],
+                    facet: key
+                })
+            }
+        }
+
+        console.log(`* search ${this.keyword} results`, results);
+        this.search_results = results;
+    },
+
+    resetFilters: function (facet, name) {
+        this.filters[facet] = this.filters[facet].filter(v => {
+            return v !== name;
+        });
+    },
+    reset: function () {
+        var filters = {};
+        Object.keys(this.search_config).map(function (v) {
+            filters[v] = [];
+        })
+
+        this.filters = filters;
+        this.query = '';
     },
     
     msg(

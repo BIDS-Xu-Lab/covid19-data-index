@@ -31,6 +31,7 @@ app.use(ToastService);
 
 const store = useDataStore();
 window.store = store;
+store.init();
 
 // add the router to the app
 app.use(router);

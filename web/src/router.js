@@ -2,7 +2,8 @@ import { createWebHistory, createRouter } from 'vue-router'
 
 import HomePage from './pages/Home.vue';
 import AboutPage from './pages/About.vue';
-import Submit from './pages/Submit.vue';
+import SubmitPage from './pages/Submit.vue';
+import SearchPage from './pages/Search.vue';
 import Statistics from './pages/Statistics.vue';
 import FeedbackPage from './pages/Feedback.vue';
 import DetailPage from './pages/Detail.vue';
@@ -10,7 +11,8 @@ import DetailPage from './pages/Detail.vue';
 const routes = [
     { path: '/', component: HomePage },
     { path: '/about', component: AboutPage },
-    { path: '/submit', component: Submit },
+    { path: '/submit', component: SubmitPage },
+    { path: '/search', component: SearchPage },
     { path: '/statistics', component: Statistics },
     { path: '/feedback', component: FeedbackPage },
 

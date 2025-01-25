@@ -6,7 +6,6 @@ import { useDataStore } from './DataStore';
 const store = useDataStore();
 
 onMounted(() => {
-    store.init();
 });
 </script>
 
