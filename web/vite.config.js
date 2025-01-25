@@ -9,6 +9,8 @@ export default ({ mode }) => {
   return defineConfig({
     base: base_path,
 
+    publicDir: 'public',
+
     define: {
       // Expose the app-level env vars to the client.
       'import.meta.env': JSON.stringify(process.env),

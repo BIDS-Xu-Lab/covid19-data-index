@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia';
 import router from './router';
+import itemsjs from 'itemsjs';
+import { data } from 'autoprefixer';
 
 export const useDataStore = defineStore('jarvis', {
 
@@ -72,7 +74,11 @@ state: () => ({
             count: 22,
         },
         ]
-    }
+    },
+
+    datasets: [],
+    datasets_dict: {},
+    search_engine: null,
 }),
 
 getters: {
@@ -84,6 +90,51 @@ actions: {
         this.router.push("/" + page);
     },
 
+    init: async function() {
+        await this.loadData();
+        this.buildDict();
+        this.buildIndex();
+    },
+
+    loadData: async function() {
+        // send a fetch request to the /data-covid19-data.index.jsonl
+        const response = await fetch(
+            '/data-covid19-data-index.jsonl'
+        );
+    
+        // parse the response as jsonl
+        const data = await response.text();
+        
+        // parse the lines as json
+        const lines = data.split('\n');
+        const json = [];
+        for (const line of lines) {
+            if (line.trim() === '') {
+                continue;
+            }
+            json.push(JSON.parse(line));
+        }
+        this.datasets = json;
+    
+        console.log('* loaded ' + json.length + ' records');
+    },
+
+    buildDict: function() {
+        const dict = {};
+        for (const dataset of this.datasets) {
+            dict[dataset.id] = dataset;
+        }
+        this.datasets_dict = dict;
+    },
+
+    buildIndex: function() {
+        this.search_engine = itemsjs(this.datasets, {
+            searchableFields: ['title', 'description', 'organization', 'data_type'],
+        });
+
+        console.log('* built index');
+    },
+    
     msg(
         message, 
         title='Message', 
