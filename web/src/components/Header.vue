@@ -73,6 +73,7 @@ const onSubmitSearch = (e) => {
                 style="width: calc(100% - 4rem); border-radius: 2rem; padding: 0.5rem 1rem; font-size: 1.5rem; text-align: center;">
             
             <span class="text-black"
+                @click="onSubmitSearch"
                 style="margin-left: -5rem; cursor: pointer;">
                 Search
             </span>

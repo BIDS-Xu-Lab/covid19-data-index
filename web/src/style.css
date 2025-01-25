@@ -25,6 +25,15 @@ body {
   color: black;
 }
 
+a {
+  color: #0070f3;
+  text-decoration: none;
+}
+a:hover {
+  color: blue;
+  text-decoration: underline;
+}
+
 #app {
   display: flex;
   flex-direction: column;
