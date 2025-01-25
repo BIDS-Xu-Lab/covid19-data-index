@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted, ref } from "vue";
+import * as toolbox from "../toolbox";
 
 import { useDataStore } from "../DataStore";
 import Header from "../components/Header.vue";
@@ -28,16 +29,20 @@ const store = useDataStore();
                 All Types
             </div>
 
-            <div class="flex flex-col">
-                <div v-for="item in store.stats.by_data_type"
+            <div v-if="store.stats"
+                class="flex flex-col">
+                <div v-for="item in store.stats.data_type"
                     class="flex flex-row justify-between">
                     <div>
-                        {{ item.name }}
+                        {{ item.key }}
                     </div>
                     <div>
-                        {{ item.count }}
+                        {{ toolbox.addComma(item.doc_count) }}
                     </div>
                 </div>
+            </div>
+            <div v-else>
+                Loading ...
             </div>
         </div>
 
@@ -52,16 +57,20 @@ const store = useDataStore();
                 All Countries
             </div>
 
-            <div class="flex flex-col">
-                <div v-for="item in store.stats.by_data_type"
+            <div v-if="store.stats"
+                class="flex flex-col">
+                <div v-for="item in store.stats.country"
                     class="flex flex-row justify-between">
                     <div>
-                        {{ item.name }}
+                        {{ item.key }}
                     </div>
                     <div>
-                        {{ item.count }}
+                        {{ toolbox.addComma(item.doc_count) }}
                     </div>
                 </div>
+            </div>
+            <div v-else>
+                Loading ...
             </div>
         </div>
 
@@ -123,28 +132,36 @@ const store = useDataStore();
 
             </div>
 
-            <div class="flex flex-col gap-4">
-                <div v-for="id in store.popular_dataset_ids"
-                    class="flex flex-row justify-between pop-dataset gap-2">
+            <div v-if="store.datasets.length > 0"
+                class="flex flex-col gap-4">
+                <template v-for="id in store.popular_dataset_ids">
+                    <div v-if="store.datasets_dict[id]"
+                        class="flex flex-row justify-between pop-dataset gap-2">
 
-                    <div class="mr-2" style="width: 180px;">
-                        <img :src="'/img/thumb-' + id + '.png'" 
-                            style="height: 100px; width: 100%;"
-                            alt="" />
-                    </div>
+                        <div class="mr-2" style="width: 180px;">
+                            <img :src="'/img/thumb-' + id + '.png'" 
+                                style="height: 100px; width: 100%;"
+                                alt="" />
+                        </div>
 
-                    <div class="flex flex-col" style="width: calc(100% - 200px);">
-                        <div class="title">
-                            Coronavirus COVID-19 Global Cases by the Center for System Science and Engineering (CSSE) at Johns Hopkins University (JHU)
-                        </div>
-                        <div class="description">
-                            In response to the COVID-19 pandemic, the Allen Institute for AI has partnered with leading research groups to prepare and distribute the COVID-19 Open Research Dataset (CORD-19), a free resource of over 29,000 ...
-                        </div>
-                        <div>
-                            Date : 2020-02-15
+                        <div class="flex flex-col" style="width: calc(100% - 200px);">
+                            <div class="title cursor-pointer"
+                                @click="store.gotoDatasetPage(id)">
+                                {{ store.datasets_dict[id].title }}
+                            </div>
+                            <div class="description">
+                                {{ store.datasets_dict[id].description }}
+                            </div>
+                            <div>
+                                Date : 2020-02-15
+                            </div>
                         </div>
                     </div>
-                </div>
+                </template>
+            </div>
+            <div v-else
+                class="flex flex-col gap-4">
+                Loading datasets ...
             </div>
         </div>
 
@@ -159,7 +176,7 @@ const store = useDataStore();
 .pop-dataset {
     border: 1px solid #ccc;
     width: 100%;
-    height: 150px;
+    height: 11rem;
     padding: 1rem;
     box-shadow: 0 2px 4px 0 #c7c7c7;
 }
@@ -170,5 +187,8 @@ const store = useDataStore();
 .description {
     line-height: 1.2rem;
     margin-bottom: 0.5rem;
+    height: 4.9rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 </style>

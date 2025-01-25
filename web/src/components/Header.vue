@@ -1,14 +1,21 @@
 <script setup>
 import { onMounted, ref } from "vue";
-
+import { useRouter } from "vue-router";
 import { useDataStore } from "../DataStore";
+const router = useRouter();
 const store = useDataStore();
 
 const onSubmitSearch = (e) => {
     console.log('* search for', store.keyword);
     store.page = 0;
     store.search()
-    store.gotoPage('search');
+    
+    router.push({
+        path: '/search',
+        query: {
+            keyword: store.keyword,
+        }
+    })
 }
 </script>
 <template>
@@ -70,7 +77,7 @@ const onSubmitSearch = (e) => {
                 class="bg-white text-black"
                 placeholder="Search for datasets"
                 @keyup.enter="onSubmitSearch"
-                style="width: calc(100% - 4rem); border-radius: 2rem; padding: 0.5rem 1rem; font-size: 1.5rem; text-align: center;">
+                style="width: calc(100% - 7rem); border-radius: 2rem; padding: 0.5rem 1rem; font-size: 1.5rem; text-align: center;">
             
             <span class="text-black"
                 @click="onSubmitSearch"

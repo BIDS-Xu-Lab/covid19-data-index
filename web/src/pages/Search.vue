@@ -4,7 +4,9 @@ import * as toolbox from "../toolbox";
 import { useDataStore } from "../DataStore";
 import Header from "../components/Header.vue";
 import { Checkbox } from "primevue";
+import { useRouter } from "vue-router";
 import markdownit from 'markdown-it';
+const router = useRouter();
 const md = markdownit();
 
 const store = useDataStore();
@@ -12,6 +14,10 @@ const store = useDataStore();
 function onChangePage(page) {
     console.log("onChangePage", page);
     store.page = page.page + 1;
+    store.search();
+}
+
+function onChangeFilter(e) {
     store.search();
 }
 
@@ -49,7 +55,10 @@ onMounted(() => {
                 <div v-for="item in store.search_results?.data?.aggregations.data_type.buckets"
                     class="flex flex-row justify-between">
                     <div class="flex items-center gap-2">
-                        <Checkbox />
+                        <Checkbox 
+                            v-model="store.filters.data_type"
+                            @value-change="onChangeFilter"
+                            :value="item.key" />
                         {{ item.key }}
                     </div>
                     <div>
@@ -80,7 +89,10 @@ onMounted(() => {
                 <div v-for="item in store.search_results?.data?.aggregations.country.buckets"
                     class="flex flex-row justify-between">
                     <div class="flex items-center gap-2">
-                        <Checkbox />
+                        <Checkbox 
+                            v-model="store.filters.country"
+                            @value-change="onChangeFilter"
+                            :value="item.key" />
                         {{ item.key }}
                     </div>
                     <div>
@@ -110,6 +122,21 @@ onMounted(() => {
                     </span>
                 </div>
 
+                <div class="flex flex-row justify-end gap-2">
+                    <Tag v-for="filter in store.selected_filters"
+                        class="flex flex-row items-center"
+                        :class="'tag-' + filter.facet"
+                        v-tooltip.bottom="filter.facet + ': ' + filter.name"
+                        severity="secondary">
+                        <span class="mr-1">
+                            {{ filter.name }}
+                        </span>
+                        <span @click="store.removeFilter(filter)">
+                            <font-awesome-icon icon="fa-solid fa-xmark" 
+                                class="cursor-pointer" />
+                        </span>
+                    </Tag>
+                </div>
             </div>
         </div>
 
@@ -133,6 +160,7 @@ onMounted(() => {
                         <div class="w-48 text-right">
                             <Button severity="info" 
                                 size="small"
+                                @click="store.gotoDatasetPage(item.id)"
                                 label="Details" />
                         </div>
                     </div>
@@ -165,5 +193,12 @@ onMounted(() => {
     /* wrap text */
     text-wrap: break-word;
     overflow: hidden;
+}
+
+.tag-data_type {
+    background-color: #85d3ef;
+}
+.tag-country {
+    background-color: #f9ee93;
 }
 </style>

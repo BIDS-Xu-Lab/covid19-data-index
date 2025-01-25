@@ -2,11 +2,13 @@ import { defineStore } from 'pinia';
 import router from './router';
 import itemsjs from 'itemsjs';
 import { data } from 'autoprefixer';
+import { useToast } from 'primevue';
 
 export const useDataStore = defineStore('jarvis', {
 
 state: () => ({
     version: '0.9.5',
+    admin_email: 'firat.tiryaki@uth.tmc.edu',
 
     // current current_view
     current_page: '/',
@@ -28,50 +30,7 @@ state: () => ({
     ],
 
     // for stats
-    stats: {
-        by_data_type: [
-        {
-            name: 'Clinical',
-            count: 1853,
-        },
-        {
-            name: 'Other',
-            count: 1177,
-        },
-        {
-            name: 'Imaging',
-            count: 1108,
-        },
-        {
-            name: 'Epidemiology',
-            count: 1016,
-        },
-        {
-            name: 'Social Science',
-            count: 600,
-        },
-        {
-            name: 'Literature',
-            count: 119,
-        },
-        {
-            name: 'Omics',
-            count: 52,
-        },
-        {
-            name: 'Transportation',
-            count: 40,
-        },
-        {
-            name: 'Climate',
-            count: 30,
-        },
-        {
-            name: 'Various',
-            count: 22,
-        },
-        ]
-    },
+    stats: null,
 
     datasets: [],
     datasets_dict: {},
@@ -88,11 +47,13 @@ state: () => ({
         aggregations: {
             data_type: {
                 title: 'Data Type',
-                size: 10
+                size: 10,
+                conjunction: false,
             },
             country: {
                 title: 'Country',
-                size: 10
+                size: 10,
+                conjunction: false,
             },
         }
     },
@@ -105,6 +66,9 @@ state: () => ({
     per_page: 10,
     sort_by: 'best_match',
     search_results: {},
+
+    // toast
+    toast: useToast(),
 }),
 
 getters: {
@@ -128,6 +92,8 @@ actions: {
         await this.loadData();
         this.buildDict();
         await this.buildIndex();
+
+        this.getStats();
     },
 
     loadData: async function() {
@@ -190,6 +156,16 @@ actions: {
         });
 
     },
+
+    getStats: function() { 
+        let ret = this.search_engine.search({ query: '' });
+
+        this.stats = {};
+        this.stats.data_type = ret.data.aggregations.data_type.buckets;
+        this.stats.country = ret.data.aggregations.country.buckets;
+
+        console.log('* got stats', this.stats);
+    },
     
     search: function() {
         if (!this.keyword.trim()) {
@@ -218,11 +194,14 @@ actions: {
         this.search_results = results;
     },
 
-    resetFilters: function (facet, name) {
-        this.filters[facet] = this.filters[facet].filter(v => {
-            return v !== name;
+    removeFilter: function (filter) {
+        this.filters[filter.facet] = this.filters[filter.facet].filter(v => {
+            return v !== filter.name;
         });
+
+        this.search();
     },
+
     reset: function () {
         var filters = {};
         Object.keys(this.search_config).map(function (v) {
