@@ -168,10 +168,10 @@ actions: {
     },
     
     search: function() {
-        if (!this.keyword.trim()) {
-            return [];
+        if (this.search_engine === null) {
+            return;
         }
-
+        
         let results = this.search_engine.search({
             query: this.keyword.trim(),
             filters: this.filters,
@@ -199,6 +199,11 @@ actions: {
             return v !== filter.name;
         });
 
+        this.search();
+    },
+
+    resetFilter: function (key) {
+        this.filters[key] = [];
         this.search();
     },
 

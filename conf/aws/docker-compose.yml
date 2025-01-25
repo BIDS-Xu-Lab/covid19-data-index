@@ -1,0 +1,19 @@
+name: cv19-data-index
+
+services:
+  web:
+    build:
+      context: ../../
+      dockerfile: ./conf/aws/ui.dockerfile
+    container_name: bike-home
+    volumes:
+      - ./default.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - 8800:80
+    restart: always
+    networks:
+      - cv19-data-index-network
+
+networks:
+  cv19-data-index-network:
+    driver: bridge

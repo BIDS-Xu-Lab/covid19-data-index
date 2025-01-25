@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import * as toolbox from "../toolbox";
 import { useDataStore } from "../DataStore";
 import Header from "../components/Header.vue";
@@ -24,6 +24,16 @@ function onChangeFilter(e) {
 onMounted(() => {
 });
 
+watch(
+    () => store.search_engine,
+    (newValue, oldValue) => {
+        if (newValue != oldValue) {
+            store.page = 0;
+            store.search();
+        }
+    }
+);
+
 </script>
 
 <template>
@@ -44,7 +54,7 @@ onMounted(() => {
 
                 <div>
                     <span class="cursor-pointer border px-3 py-1 rounded-lg bg-red-100 hover:bg-red-300" 
-                        @click="store.resetFilters()">
+                        @click="store.resetFilter('data_type')">
                         clear
                     </span>
                 </div>
@@ -78,7 +88,7 @@ onMounted(() => {
 
                 <div>
                     <span class="cursor-pointer border px-3 py-1 rounded-lg bg-red-100 hover:bg-red-300" 
-                        @click="store.resetFilters()">
+                        @click="store.resetFilter('country')">
                         clear
                     </span>
                 </div>
@@ -114,8 +124,15 @@ onMounted(() => {
             <div class="flex justify-between">
                 <div class="font-bold text-blue-600">
                     <span v-if="store.search_results?.pagination">
-                        {{ toolbox.addComma(store.search_results.pagination.total) }} record(s) found for "{{ store.keyword }}"
+                        {{ toolbox.addComma(store.search_results.pagination.total) }} record(s) found 
+                        <span v-if="store.keyword">
+                            for "<span class="italic">{{ store.keyword }}</span>"
+                        </span>
+
                         in {{ store.search_results.timings.total }} ms
+                    </span>
+                    <span v-else-if="store.search_engine == null">
+                        Loading datasets ...
                     </span>
                     <span v-else>
                         Search any keyword
