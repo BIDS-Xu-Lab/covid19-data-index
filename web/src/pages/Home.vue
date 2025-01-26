@@ -1,11 +1,167 @@
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch, provide } from "vue";
 import * as toolbox from "../toolbox";
 
 import { useDataStore } from "../DataStore";
 import Header from "../components/Header.vue";
 
+import 'echarts';
+import VChart, { THEME_KEY } from 'vue-echarts';
+provide(THEME_KEY, 'light');
+
 const store = useDataStore();
+
+
+const chart_bar_count = ref(null);
+const chart_pie_data_type = ref(null);
+const chart_bar_country = ref(null);
+
+let option_bar_count = {
+    title: {
+        text: 'Datasets: 6,017',
+        left: 'center',
+        textStyle: {
+            fontSize: 14
+        }
+    },
+    grid: {
+        left: '5',
+        right: '5',
+        bottom: '10',
+        containLabel: true
+    },
+    tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+            type: 'shadow'
+        }
+    },
+    xAxis: {
+        type: 'category',
+        data: [],
+        axisLabel: {
+            interval: 0,
+            rotate: 30
+        }
+    },
+    yAxis: {
+        name: 'Count',
+        type: 'value',
+        max: 2000
+    },
+    series: [
+    {
+        data: [],
+        type: 'bar',
+        showBackground: true,
+        backgroundStyle: {
+            color: '#efefef'
+        },
+    }
+    ]
+};
+
+let option_pie_data_type = {
+    title: {
+        text: 'Data Type Distribution',
+        left: 'center'
+    },
+    tooltip: {
+        trigger: 'item'
+    },
+    legend: {
+        show: false
+    },
+    series: [
+    {
+        name: 'Data Type',
+        type: 'pie',
+        radius: '50%',
+        data: [],
+        emphasis: {
+            itemStyle: {
+            shadowBlur: 10,
+            shadowOffsetX: 0,
+            shadowColor: 'rgba(0, 0, 0, 0.5)'
+            }
+        }
+    }
+    ]
+};
+
+let option_bar_country = {
+    title: {
+        text: 'Country Distribution',
+        left: 'center'
+    },
+    tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+            type: 'shadow'
+        }
+    },
+    grid: {
+        left: '5',
+        right: '5',
+        bottom: '10',
+        containLabel: true
+    },
+    xAxis: {
+        type: 'category',
+        data: [],
+        axisLabel: {
+            interval: 0,
+            rotate: 45
+        }
+    },
+    yAxis: {
+        name: 'Count',
+        type: 'value',
+        max: 2000
+    },
+    series: [
+    {
+        data: [],
+        type: 'bar',
+        showBackground: true,
+        backgroundStyle: {
+            color: '#efefef'
+        },
+    }
+    ]
+};
+
+function updateCharts() {
+    // for count
+    option_bar_count.xAxis.data = store.stats.date_updated.map(item => item.key);
+    option_bar_count.series[0].data = store.stats.date_updated.map(item => {
+        return {
+            value: item.value,
+            itemStyle: {
+                color: '#fabc58'
+            }
+        }
+    });
+    chart_bar_count.value?.setOption(option_bar_count);
+
+
+    // for data type
+    option_pie_data_type.series[0].data = store.stats.data_type.map(item => { return { "name": item.key, "value": item.doc_count} }).slice(0, 5);
+    chart_pie_data_type.value?.setOption(option_pie_data_type);
+
+
+    // for country, only show top 5
+    option_bar_country.xAxis.data = store.stats.country.map(item => item.key).slice(0, 5);
+    option_bar_country.series[0].data = store.stats.country.map(item => item.doc_count).slice(0, 5);
+    chart_bar_country.value?.setOption(option_bar_country);
+
+}
+
+watch(() => store.stats, async (newValue, oldValue) => {
+    if (newValue !== null) {
+        updateCharts();
+    }
+}, { immediate: true });
 
 </script>
 
@@ -100,16 +256,47 @@ const store = useDataStore();
                     <font-awesome-icon :icon="['fas', 'cubes-stacked']" />
                     Overview
                 </div>
+            </div>
 
-                <div class="flex flex-row justify-between">
-
-                </div>
+            <div v-if="!store.stats" class="text-left">
+                Loading statistics ...
             </div>
 
             <div class="flex flex-row gap-2 px-2">
-                <div v-for="idx in [1,2,3]"
+                <!-- <div v-for="idx in [1,2,3]"
                     class="w-1/3 p-4 border-2 rounded-sm shadow-lg">
                     <img :src="'/img/o' + idx + '.png'" alt="">
+                </div> -->
+                <div v-show="store.stats"
+                    class="w-1/3 p-4 border-2 rounded-sm shadow-lg">
+                    <div style="width: 100%; height: 230px;">
+                        <v-chart 
+                            ref="chart_bar_count" 
+                            :manual-update="true" 
+                            autoresize />
+                    </div>
+                </div>
+
+
+                <div v-show="store.stats"
+                    class="w-1/3 p-4 border-2 rounded-sm shadow-lg">
+                    <div style="width: 100%; height: 230px;">
+                        <v-chart 
+                            ref="chart_pie_data_type" 
+                            :manual-update="true" 
+                            autoresize />
+                    </div>
+                </div>
+
+
+                <div v-show="store.stats"
+                    class="w-1/3 p-4 border-2 rounded-sm shadow-lg">
+                    <div style="width: 100%; height: 230px;">
+                        <v-chart 
+                            ref="chart_bar_country" 
+                            :manual-update="true" 
+                            autoresize />
+                    </div>
                 </div>
             </div>
         </div>
@@ -153,7 +340,7 @@ const store = useDataStore();
                                 {{ store.datasets_dict[id].description }}
                             </div>
                             <div>
-                                Date : 2020-02-15
+                                Date: {{ store.datasets_dict[id].date_updated }}
                             </div>
                         </div>
                     </div>

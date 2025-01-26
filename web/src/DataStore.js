@@ -164,6 +164,30 @@ actions: {
         this.stats.data_type = ret.data.aggregations.data_type.buckets;
         this.stats.country = ret.data.aggregations.country.buckets;
 
+        // count the number of datasets by year+month
+        // the date_updated is YYYY-MM-DD format,
+        // so we can just take the first 7 characters
+        this.stats.date_updated = {};
+        for (const dataset of this.datasets) {
+            let date = dataset.date_updated.substring(0, 7);
+            if (date == '') { date = '2020-07'}
+            if (this.stats.date_updated[date] === undefined) {
+                this.stats.date_updated[date] = 1;
+            } else {
+                this.stats.date_updated[date]++;
+            }
+        }
+
+        // sort the date_updated by key and get the values
+        const date_updated = [];
+        for (const [key, value] of Object.entries(this.stats.date_updated)) {
+            date_updated.push({ key: key, value: value });
+        }
+        date_updated.sort((a, b) => {
+            return a.key.localeCompare(b.key);
+        });
+        this.stats.date_updated = date_updated;
+
         console.log('* got stats', this.stats);
     },
     

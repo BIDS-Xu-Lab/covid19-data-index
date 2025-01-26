@@ -41,7 +41,7 @@ let option_data_type = {
         }
     }
     ]
-};;
+};
 
 let option_bar_country = {
     title: {
