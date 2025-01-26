@@ -4,7 +4,6 @@ WORKDIR /app
 COPY ./web/package.json ./web/package-lock.json ./
 RUN npm install
 COPY ./web/ ./
-ARG NODE_ENV=medviz
 RUN npx vite build
 
 # second stage: serve the app using httpd

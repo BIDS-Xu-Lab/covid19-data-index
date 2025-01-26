@@ -114,7 +114,7 @@ actions: {
         // }
 
         const response = await fetch(
-            '/data-covid19-data-index.jsonl'
+            '/data-covid19-data-index.json'
         );
     
         // parse the response as jsonl
@@ -171,7 +171,7 @@ actions: {
         if (this.search_engine === null) {
             return;
         }
-        
+
         let results = this.search_engine.search({
             query: this.keyword.trim(),
             filters: this.filters,
