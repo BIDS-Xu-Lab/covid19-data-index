@@ -163,6 +163,12 @@ watch(() => store.stats, async (newValue, oldValue) => {
     }
 }, { immediate: true });
 
+onMounted(async () => {
+    if (store.stats) {
+        updateCharts();
+    }
+});
+
 </script>
 
 <template>
