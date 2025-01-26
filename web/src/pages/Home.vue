@@ -1,6 +1,8 @@
 <script setup>
 import { onMounted, ref, watch, provide } from "vue";
 import * as toolbox from "../toolbox";
+import { useRouter } from "vue-router";
+const router = useRouter();
 
 import { useDataStore } from "../DataStore";
 import Header from "../components/Header.vue";
@@ -163,6 +165,25 @@ watch(() => store.stats, async (newValue, oldValue) => {
     }
 }, { immediate: true });
 
+function onClickFacet(facet, value) {
+    // clear other filters
+    for (const key in store.filters) {
+        if (key != facet) {
+            store.filters[key] = [];
+        }
+    }
+
+    // set this filter
+    store.filters[facet] = [value];
+    store.page = 0;
+    store.search();
+
+    // go to search page
+    router.push({
+        path: '/search',
+    });
+}
+
 onMounted(async () => {
     if (store.stats) {
         updateCharts();
@@ -194,7 +215,8 @@ onMounted(async () => {
             <div v-if="store.stats"
                 class="flex flex-col">
                 <div v-for="item in store.stats.data_type"
-                    class="flex flex-row justify-between">
+                    @click="onClickFacet('data_type', item.key)"
+                    class="flex flex-row justify-between cursor-pointer hover:bg-gray-100">
                     <div>
                         {{ item.key }}
                     </div>
@@ -222,7 +244,8 @@ onMounted(async () => {
             <div v-if="store.stats"
                 class="flex flex-col">
                 <div v-for="item in store.stats.country"
-                    class="flex flex-row justify-between">
+                    @click="onClickFacet('country', item.key)"
+                    class="flex flex-row justify-between cursor-pointer hover:bg-gray-100">
                     <div>
                         {{ item.key }}
                     </div>

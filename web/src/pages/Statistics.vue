@@ -10,8 +10,48 @@ provide(THEME_KEY, 'light');
 
 const store = useDataStore();
 
+const chart_bar_count = ref(null);
 const chart_data_type = ref(null);
 const chart_bar_country = ref(null);
+
+let option_bar_count = {
+    title: {
+        text: 'Datasets',
+        left: 'center',
+        textStyle: {
+            fontSize: 14
+        }
+    },
+    tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+            type: 'shadow'
+        }
+    },
+    xAxis: {
+        type: 'category',
+        name: 'Date (Month)',
+        data: [],
+        axisLabel: {
+            interval: 0,
+        }
+    },
+    yAxis: {
+        name: 'Count',
+        type: 'value',
+        max: 2000
+    },
+    series: [
+    {
+        data: [],
+        type: 'bar',
+        showBackground: true,
+        backgroundStyle: {
+            color: '#efefef'
+        },
+    }
+    ]
+};
 
 let option_data_type = {
     title: {
@@ -30,7 +70,7 @@ let option_data_type = {
     {
         name: 'Data Type',
         type: 'pie',
-        radius: '50%',
+        radius: '70%',
         data: [],
         emphasis: {
             itemStyle: {
@@ -83,6 +123,11 @@ let option_bar_country = {
 };
 
 function updateCharts() {
+    // for count
+    option_bar_count.xAxis.data = store.stats.date_updated.map(item => item.key);
+    option_bar_count.series[0].data = store.stats.date_updated.map(item => item.value);
+    chart_bar_count.value?.setOption(option_bar_count);
+
     // for data type
     option_data_type.series[0].data = store.stats.data_type.map(item => { return { "name": item.key, "value": item.doc_count} });
     chart_data_type.value?.setOption(option_data_type);
@@ -121,6 +166,16 @@ onMounted(async () => {
 
         <div v-if="!store.stats" class="text-center">
             Loading statistics ...
+        </div>
+
+        <div v-show="store.stats" class="flex flex-col w-full mb-4"
+            style="margin: 0 auto;">
+            <div style="width: 100%; height: 600px;">
+                <v-chart 
+                    ref="chart_bar_count" 
+                    :manual-update="true" 
+                    autoresize />
+            </div>
         </div>
 
         <div v-show="store.stats" class="flex flex-col w-full mb-4"

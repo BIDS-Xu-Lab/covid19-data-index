@@ -22,6 +22,17 @@ function onChangeFilter(e) {
 }
 
 onMounted(() => {
+    // get the keyword from the query
+    if (router.currentRoute.value.query.keyword) {
+        console.log('* url keyword:', router.currentRoute.value.query.keyword);
+
+        // when the store.keyword is different from the url keyword
+        if (store.keyword != router.currentRoute.value.query.keyword) {
+            store.keyword = router.currentRoute.value.query.keyword;
+            store.page = 0;
+            store.search();
+        }
+    }
 });
 
 watch(
