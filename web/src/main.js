@@ -23,6 +23,8 @@ app.use(PrimeVue, {
     theme: {
         preset: my_theme,
         options: {
+            // disable dark theme by default
+            darkModeSelector: false || 'none',
         }
     }
 });
